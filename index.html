@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listify — Shopee Optimizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0D0D0D;--s1:#161616;--s2:#1F1F1F;--s3:#2A2A2A;
+  --b:rgba(255,255,255,0.08);--b2:rgba(255,255,255,0.04);
+  --or:#EE4D2D;--or-dim:rgba(238,77,45,0.13);--or-b:rgba(238,77,45,0.35);
+  --gr:#22C55E;--gr-dim:rgba(34,197,94,0.1);
+  --am:#F59E0B;--am-dim:rgba(245,158,11,0.1);
+  --bl:#3B82F6;--bl-dim:rgba(59,130,246,0.1);
+  --tx:#F0F0F0;--mu:#777;--mu2:#444;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle,rgba(255,255,255,0.025) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;z-index:0}
+
+.app{display:flex;min-height:100vh;position:relative;z-index:1}
+
+/* sidebar */
+.sidebar{width:210px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--b);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.logo{padding:1.25rem 1.25rem 1rem;border-bottom:1px solid var(--b)}
+.logo-mark{font-size:1.1rem;font-weight:800;letter-spacing:-.03em}
+.logo-mark span{color:var(--or)}
+.logo-sub{font-size:.62rem;color:var(--mu);font-family:'JetBrains Mono',monospace;margin-top:2px}
+nav{padding:.5rem 0;flex:1}
+.ni{display:flex;align-items:center;gap:9px;padding:.55rem 1.25rem;font-size:.78rem;font-weight:500;color:var(--mu);cursor:pointer;border-left:2px solid transparent;transition:all .15s;user-select:none}
+.ni:hover{color:var(--tx);background:var(--s2)}
+.ni.on{color:var(--tx);border-left-color:var(--or);background:var(--or-dim)}
+.ni-badge{margin-left:auto;font-size:.58rem;background:var(--or);color:#fff;padding:1px 5px;border-radius:100px;font-family:'JetBrains Mono',monospace}
+.sb-foot{margin-top:auto;padding:.875rem 1.25rem;border-top:1px solid var(--b)}
+.api-st{display:flex;align-items:center;gap:6px;font-size:.68rem;color:var(--mu);font-family:'JetBrains Mono',monospace}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--mu2);flex-shrink:0}
+.dot.on{background:var(--gr);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* main */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(13,13,13,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--b);padding:.8rem 1.75rem;display:flex;align-items:center;justify-content:space-between}
+.pg-title{font-size:.9rem;font-weight:700}
+.pg-sub{font-size:.65rem;color:var(--mu);margin-top:1px}
+.dots{display:flex;gap:5px;align-items:center}
+.sd{width:7px;height:7px;border-radius:50%;background:var(--s3);transition:all .3s}
+.sd.on{background:var(--or);transform:scale(1.35)}
+.sd.dn{background:var(--gr)}
+.content{padding:1.75rem;max-width:860px;width:100%}
+
+/* panels */
+.panel{display:none}
+.panel.on{display:block;animation:fu .22s ease}
+@keyframes fu{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+/* card */
+.card{background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:1.4rem;margin-bottom:1.1rem}
+.ct{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);margin-bottom:.875rem;display:flex;align-items:center;gap:.4rem}
+.ct em{color:var(--or);font-style:normal;font-size:.85rem}
+
+/* form */
+label{display:block;font-size:.7rem;font-weight:600;color:var(--mu);margin-bottom:.35rem;letter-spacing:.04em;text-transform:uppercase}
+input,textarea,select{width:100%;background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:.6rem .8rem;color:var(--tx);font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;outline:none;transition:border-color .2s;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:var(--or-b)}
+input::placeholder,textarea::placeholder{color:var(--mu2)}
+select{appearance:none;cursor:pointer}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:.875rem}
+.fg{margin-bottom:.875rem}
+
+/* btn */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:.55rem 1.1rem;border-radius:8px;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap}
+.btn-or{background:var(--or);color:#fff}
+.btn-or:hover:not(:disabled){background:#d63e1e;transform:translateY(-1px)}
+.btn-or:disabled{opacity:.45;cursor:not-allowed}
+.btn-s{background:var(--s2);color:var(--tx);border:1px solid var(--b)}
+.btn-s:hover{background:var(--s3)}
+.btn-gr{background:var(--gr);color:#000;font-weight:700}
+.btn-gr:hover{background:#16a34a}
+.br{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.1rem}
+
+/* loading */
+.lov{display:none;position:fixed;inset:0;background:rgba(13,13,13,.88);backdrop-filter:blur(8px);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:.875rem}
+.lov.on{display:flex}
+.spin{width:38px;height:38px;border-radius:50%;border:3px solid var(--s3);border-top-color:var(--or);animation:sp .75s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.lmsg{font-size:.8rem;color:var(--mu);font-family:'JetBrains Mono',monospace}
+
+/* pills */
+.kwc{display:flex;flex-wrap:wrap;gap:5px;margin-top:.6rem}
+.kp{font-size:.68rem;padding:3px 9px;border-radius:100px;font-family:'JetBrains Mono',monospace;cursor:pointer;border:1px solid var(--b);color:var(--mu);background:var(--s2);transition:all .13s;user-select:none}
+.kp:hover{border-color:var(--or-b);color:var(--tx)}
+.kp.hot{background:var(--or-dim);border-color:var(--or-b);color:#ff7a5c}
+.kp.sel{background:var(--or);border-color:var(--or);color:#fff}
+
+/* insight bar */
+.ib-row{display:flex;align-items:center;gap:8px;padding:.5rem 0;border-bottom:1px solid var(--b2);font-size:.78rem}
+.ib-row:last-child{border-bottom:none}
+.ib-lbl{min-width:100px;color:var(--tx)}
+.ib-track{flex:1;height:4px;background:var(--s3);border-radius:2px;overflow:hidden}
+.ib-fill{height:100%;border-radius:2px;background:var(--or)}
+.ib-pct{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--mu);min-width:30px;text-align:right}
+
+/* comp rows */
+.cr{display:flex;align-items:flex-start;gap:8px;padding:.6rem 0;border-bottom:1px solid var(--b2)}
+.cr:last-child{border-bottom:none}
+.cr-rank{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--mu);width:22px;flex-shrink:0;padding-top:2px}
+.cr-title{font-size:.8rem;color:var(--tx);line-height:1.4;flex:1}
+.cr-meta{font-size:.68rem;color:var(--mu);margin-top:2px}
+.badge{font-size:.62rem;padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.bg-gr{background:var(--gr-dim);color:var(--gr)}
+.bg-am{background:var(--am-dim);color:var(--am)}
+
+/* title output */
+.tout{background:var(--s2);border:1px solid rgba(238,77,45,.2);border-radius:8px;padding:.875rem 1rem;margin-bottom:.65rem;cursor:pointer;transition:border-color .15s}
+.tout:hover{border-color:var(--or-b)}
+.tout.sel{border-color:var(--or)}
+.tout-lbl{font-size:.6rem;font-family:'JetBrains Mono',monospace;color:var(--or);margin-bottom:.35rem;letter-spacing:.06em}
+.tout-txt{font-size:.86rem;line-height:1.5;color:var(--tx)}
+.tout-foot{display:flex;justify-content:space-between;align-items:center;margin-top:.5rem}
+.char-ok{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--gr)}
+.char-warn{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--am)}
+
+/* copy btn */
+.cpb{background:var(--s3);border:1px solid var(--b);color:var(--mu);border-radius:5px;padding:3px 8px;font-size:.65rem;cursor:pointer;transition:all .13s;font-family:'JetBrains Mono',monospace}
+.cpb:hover{background:var(--s2);color:var(--tx)}
+.cpb.ok{background:var(--gr-dim);color:var(--gr);border-color:rgba(34,197,94,.3)}
+
+/* alert toast */
+.toast{position:fixed;top:1rem;right:1rem;z-index:600;max-width:320px;border-radius:8px;padding:.7rem .875rem;font-size:.78rem;display:flex;align-items:flex-start;gap:7px;animation:fu .2s ease;pointer-events:none}
+.t-info{background:var(--bl-dim);border:1px solid rgba(59,130,246,.25);color:#93c5fd}
+.t-ok{background:var(--gr-dim);border:1px solid rgba(34,197,94,.25);color:#86efac}
+.t-warn{background:var(--am-dim);border:1px solid rgba(245,158,11,.25);color:#fcd34d}
+.t-err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+
+/* inline alert */
+.alert{border-radius:8px;padding:.7rem .875rem;font-size:.78rem;margin-bottom:.875rem;display:flex;align-items:flex-start;gap:7px}
+.al-info{background:var(--bl-dim);border:1px solid rgba(59,130,246,.2);color:#93c5fd}
+
+/* carousel */
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.65rem;margin-top:.65rem}
+.sc{aspect-ratio:1;border-radius:10px;border:1px solid var(--b);background:var(--s2);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.65rem;text-align:center;position:relative;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.sc:hover{border-color:var(--or-b)}
+.sc.gen{border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.04)}
+.sc-num{position:absolute;top:5px;left:7px;font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--mu)}
+.sc-ic{font-size:1.6rem;margin-bottom:3px}
+.sc-name{font-size:.65rem;font-weight:600;margin-bottom:2px}
+.sc-desc{font-size:.58rem;color:var(--mu);line-height:1.3}
+.sc-ok{position:absolute;bottom:5px;right:5px;font-size:.5rem;background:var(--gr);color:#000;padding:1px 4px;border-radius:3px;font-weight:700;font-family:'JetBrains Mono',monospace}
+
+/* upload */
+.upz{border:2px dashed var(--b);border-radius:10px;padding:1.75rem;text-align:center;cursor:pointer;transition:all .2s}
+.upz:hover,.upz.drag{border-color:var(--or-b);background:var(--or-dim)}
+.upz p{font-size:.75rem;color:var(--mu);margin-top:.4rem}
+.photos{display:flex;flex-wrap:wrap;gap:6px;margin-top:.875rem}
+.pthumb{width:60px;height:60px;border-radius:6px;object-fit:cover;border:1px solid var(--b)}
+
+/* score ring */
+.sw{display:flex;align-items:center;gap:1rem;margin-bottom:.875rem}
+.sr{position:relative;width:68px;height:68px;flex-shrink:0}
+.sr svg{transform:rotate(-90deg)}
+.sr .tr{fill:none;stroke:var(--s3);stroke-width:6}
+.sr .fr{fill:none;stroke:var(--or);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset 1s ease}
+.sr-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:.95rem;font-weight:700}
+.si-lbl{font-size:.65rem;color:var(--mu);margin-bottom:2px}
+.si-val{font-size:.95rem;font-weight:800;letter-spacing:-.02em}
+.si-sub{font-size:.7rem;color:var(--mu);margin-top:2px}
+
+/* api setup */
+.api-card{background:var(--s1);border:1px solid var(--or-b);border-radius:12px;padding:1.4rem;margin-bottom:1.25rem}
+.api-row{display:flex;gap:7px}
+.api-row input{flex:1;font-family:'JetBrains Mono',monospace;font-size:.78rem}
+
+@media(max-width:680px){.sidebar{display:none}.row2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- LOADING OVERLAY -->
+<div class="lov" id="lov">
+  <div class="spin"></div>
+  <div class="lmsg" id="lmsg">Processando...</div>
+</div>
+
+<div id="cors-banner" style="display:none;background:#7c2d12;color:#fed7aa;padding:.75rem 1.5rem;font-size:.8rem;text-align:center;position:relative;z-index:10;border-bottom:1px solid #c2410c">
+  ⚠️ <strong>Você está abrindo o arquivo localmente.</strong> Para funcionar, hospede em <a href="https://tiiny.host" target="_blank" style="color:#fdba74;text-decoration:underline">tiiny.host</a> e acesse pelo link — ou use a versão embutida no Claude.
+  <button onclick="document.getElementById('cors-banner').style.display='none'" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:none;border:none;color:#fed7aa;cursor:pointer;font-size:1rem">✕</button>
+</div>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">Listify<span>.</span></div>
+      <div class="logo-sub">Shopee Optimizer · MVP</div>
+    </div>
+    <nav id="sidebar-nav">
+      <div class="ni on" data-panel="spy"><span>🔍</span> Spy concorrentes <span class="ni-badge">1</span></div>
+      <div class="ni" data-panel="titulo"><span>📝</span> Gerador de título</div>
+      <div class="ni" data-panel="carrossel"><span>🖼️</span> Carrossel</div>
+      <div class="ni" data-panel="resultado"><span>✅</span> Resultado final</div>
+    </nav>
+    <div class="sb-foot">
+      <div class="api-st">
+        <div class="dot" id="api-dot"></div>
+        <span id="api-txt">API não configurada</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="pg-title" id="pg-title">Spy de Concorrentes</div>
+        <div class="pg-sub" id="pg-sub">Analise os top sellers do seu nicho na Shopee</div>
+      </div>
+      <div class="dots">
+        <div class="sd on" id="d0"></div>
+        <div class="sd" id="d1"></div>
+        <div class="sd" id="d2"></div>
+        <div class="sd" id="d3"></div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- API KEY SETUP -->
+      <div class="api-card" id="api-card">
+        <div class="ct"><em>🔑</em> Configurar API da Claude</div>
+        <div class="alert al-info" style="margin-bottom:.875rem">
+          <span>ℹ️</span>
+          <div>Insira sua chave da Anthropic. Fica salva só no seu navegador. Obtenha em <strong>console.anthropic.com</strong> — custa ~R$0,01 por análise.</div>
+        </div>
+        <div class="api-row">
+          <input id="apikey" type="password" placeholder="sk-ant-api03-..." autocomplete="off">
+          <button class="btn btn-or" id="btn-save-key">Salvar</button>
+        </div>
+      </div>
+
+      <!-- PANEL: SPY -->
+      <div class="panel on" id="panel-spy">
+        <div class="card">
+          <div class="ct"><em>📦</em> Dados do produto</div>
+          <div class="row2">
+            <div class="fg">
+              <label>Nome do produto</label>
+              <input id="p-nome" type="text" placeholder="Ex: Suporte ergonômico notebook">
+            </div>
+            <div class="fg">
+              <label>Categoria Shopee</label>
+              <select id="p-cat">
+                <option value="">Selecione...</option>
+                <option>Informática e Acessórios</option>
+                <option>Casa e Decoração</option>
+                <option>Beleza e Cuidados</option>
+                <option>Esportes e Lazer</option>
+                <option>Moda Feminina</option>
+                <option>Moda Masculina</option>
+                <option>Bebês e Crianças</option>
+                <option>Alimentos e Bebidas</option>
+                <option>Automotivo</option>
+                <option>Ferramentas e Construção</option>
+                <option>Pet Shop</option>
+                <option>Saúde</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg">
+            <label>Atributos do produto</label>
+            <textarea id="p-attr" rows="3" placeholder="Ex: alumínio, ajustável em 6 ângulos, até 17 polegadas, ventilado, dobrável..."></textarea>
+          </div>
+          <div class="row2">
+            <div class="fg">
+              <label>Título atual (opcional)</label>
+              <input id="p-tatual" type="text" placeholder="Deixe vazio se não tem">
+            </div>
+            <div class="fg">
+              <label>Preço (R$)</label>
+              <input id="p-preco" type="text" placeholder="Ex: 89,90">
+            </div>
+          </div>
+          <div class="br">
+            <button class="btn btn-or" id="btn-spy">🔍 Analisar concorrentes</button>
+          </div>
+        </div>
+
+        <div id="spy-out" style="display:none">
+          <div class="card">
+            <div class="ct"><em>📊</em> Keywords dos top sellers</div>
+            <div style="font-size:.72rem;color:var(--mu);margin-bottom:.4rem">Clique para selecionar keywords para o gerador de título</div>
+            <div class="kwc" id="kw-cloud"></div>
+            <div style="margin-top:1.1rem">
+              <div style="font-size:.7rem;color:var(--mu);margin-bottom:.6rem">Frequência nos top 10 sellers</div>
+              <div id="ib-rows"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="ct"><em>🏆</em> Títulos dos top concorrentes</div>
+            <div id="comp-list"></div>
+          </div>
+          <div class="card">
+            <div class="ct"><em>🖼️</em> Insights de imagem</div>
+            <div id="img-insights"></div>
+          </div>
+          <div class="br">
+            <button class="btn btn-or" id="btn-ir-titulo">📝 Gerar título otimizado →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL: TÍTULO -->
+      <div class="panel" id="panel-titulo">
+        <div class="card">
+          <div class="ct"><em>⚙️</em> Configurações</div>
+          <div class="fg">
+            <label>Keywords selecionadas</label>
+            <div class="kwc" id="kw-sel-show"></div>
+            <div style="font-size:.65rem;color:var(--mu);margin-top:.4rem">Volte ao Spy para selecionar keywords clicando nelas</div>
+          </div>
+          <div class="row2">
+            <div class="fg">
+              <label>Tom do título</label>
+              <select id="t-tom">
+                <option value="conversional">Conversional (vende mais)</option>
+                <option value="tecnico">Técnico</option>
+                <option value="beneficio">Foco em benefício</option>
+                <option value="premium">Premium</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Emojis no título?</label>
+              <select id="t-emoji">
+                <option value="sim">Sim (aumenta CTR)</option>
+                <option value="nao">Não</option>
+              </select>
+            </div>
+          </div>
+          <div class="br">
+            <button class="btn btn-or" id="btn-titulo">✨ Gerar 3 variações</button>
+          </div>
+        </div>
+
+        <div id="titulo-out" style="display:none">
+          <div class="card">
+            <div class="ct"><em>✅</em> Títulos gerados — clique para selecionar</div>
+            <div id="titulos-list"></div>
+            <div style="margin-top:.875rem;padding-top:.875rem;border-top:1px solid var(--b)">
+              <div style="font-size:.65rem;color:var(--mu);margin-bottom:.3rem">Selecionado</div>
+              <div id="titulo-sel-show" style="font-size:.82rem;color:var(--or);font-weight:600;min-height:18px"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="ct"><em>📈</em> Análise e bullets</div>
+            <div id="titulo-analise"></div>
+          </div>
+          <div class="br">
+            <button class="btn btn-or" id="btn-ir-carrossel">🖼️ Montar carrossel →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL: CARROSSEL -->
+      <div class="panel" id="panel-carrossel">
+        <div class="card">
+          <div class="ct"><em>📸</em> Fotos do produto</div>
+          <div class="alert al-info">
+            <span>ℹ️</span>
+            <div>Faça upload das fotos. A IA gera o texto e instrução de cada slide. Sem fotos, gera só as instruções.</div>
+          </div>
+          <div class="upz" id="upz">
+            <div style="font-size:1.75rem">📁</div>
+            <div style="font-size:.82rem;font-weight:600;margin-top:.4rem">Clique ou arraste as fotos aqui</div>
+            <p>PNG, JPG, WEBP · até 10 fotos</p>
+          </div>
+          <input type="file" id="file-in" multiple accept="image/*" style="display:none">
+          <div class="photos" id="photos-prev"></div>
+          <div class="br">
+            <button class="btn btn-or" id="btn-carrossel">🎨 Gerar slides</button>
+          </div>
+        </div>
+        <div id="carrossel-out" style="display:none">
+          <div class="card">
+            <div class="ct"><em>🖼️</em> Slides gerados</div>
+            <div class="cg" id="cg"></div>
+            <div style="margin-top:.875rem;font-size:.7rem;color:var(--mu)">💡 Passe o mouse para ver a dica de cada slide. Monte no Canva em 2000×2000px.</div>
+          </div>
+          <div class="br">
+            <button class="btn btn-gr" id="btn-ir-resultado">✅ Ver resultado final →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL: RESULTADO -->
+      <div class="panel" id="panel-resultado">
+        <div class="alert al-info"><span>🎉</span><div><strong>Listing pronto!</strong> Copie o título e siga as instruções do carrossel.</div></div>
+        <div class="card">
+          <div class="ct"><em>📋</em> Título otimizado</div>
+          <div id="res-titulo" style="font-size:.9rem;font-weight:600;line-height:1.5;margin-bottom:.75rem"></div>
+          <button class="cpb" id="btn-copy-titulo">📋 Copiar título</button>
+          <div style="margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid var(--b)">
+            <div style="font-size:.65rem;color:var(--mu);margin-bottom:.5rem">KEYWORDS</div>
+            <div class="kwc" id="res-kws"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct"><em>🖼️</em> Instruções do carrossel</div>
+          <div id="res-slides"></div>
+        </div>
+        <div class="card">
+          <div class="ct"><em>📊</em> Score do listing</div>
+          <div class="sw">
+            <div class="sr">
+              <svg width="68" height="68" viewBox="0 0 68 68">
+                <circle class="tr" cx="34" cy="34" r="28"/>
+                <circle class="fr" id="score-ring" cx="34" cy="34" r="28" stroke-dasharray="175.9" stroke-dashoffset="175.9"/>
+              </svg>
+              <div class="sr-num" id="score-num">—</div>
+            </div>
+            <div>
+              <div class="si-lbl">Score de otimização</div>
+              <div class="si-val" id="score-lbl">—</div>
+              <div class="si-sub" id="score-sub"></div>
+            </div>
+          </div>
+          <div id="score-tips"></div>
+        </div>
+        <div class="card">
+          <div class="ct"><em>🚀</em> Próximos passos</div>
+          <div style="display:flex;flex-direction:column;gap:.45rem;font-size:.8rem">
+            <div style="display:flex;gap:8px"><span style="color:var(--gr);flex-shrink:0">1.</span><span>Cole o título acima no campo de título da Shopee</span></div>
+            <div style="display:flex;gap:8px"><span style="color:var(--gr);flex-shrink:0">2.</span><span>Abra o Canva, crie um design 2000×2000px e monte cada slide seguindo as instruções</span></div>
+            <div style="display:flex;gap:8px"><span style="color:var(--gr);flex-shrink:0">3.</span><span>Use as keywords na descrição e nas tags do produto</span></div>
+            <div style="display:flex;gap:8px"><span style="color:var(--gr);flex-shrink:0">4.</span><span>Monitore o CTR nos próximos 7 dias</span></div>
+          </div>
+          <div class="br">
+            <button class="btn btn-or" id="btn-dl">⬇️ Baixar relatório</button>
+            <button class="btn btn-s" id="btn-reset">🔄 Novo produto</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── STATE ─────────────────────────────────────────────────────── */
+var S = {
+  key: '',
+  prod: {},
+  spy: null,
+  selKws: new Set(),
+  titulos: [],
+  tituloEsc: '',
+  tituloAn: null,
+  bullets: [],
+  slides: [],
+  photos: [],
+  score: 0,
+};
+
+var PANELS = ['spy','titulo','carrossel','resultado'];
+var PTITLES = {
+  spy:       ['Spy de Concorrentes',  'Analise os top sellers do seu nicho na Shopee'],
+  titulo:    ['Gerador de Título',    'Crie títulos otimizados com dados reais'],
+  carrossel: ['Carrossel de Imagens', 'Monte os slides do seu produto'],
+  resultado: ['Resultado Final',      'Seu listing otimizado está pronto'],
+};
+
+/* ── API KEY ────────────────────────────────────────────────────── */
+function initKey() {
+  try {
+    var k = localStorage.getItem('lf_key');
+    if (k && k.indexOf('sk-ant') === 0) { S.key = k; markKeyOk(); }
+  } catch(e) {}
+}
+
+function markKeyOk() {
+  document.getElementById('api-dot').classList.add('on');
+  document.getElementById('api-txt').textContent = 'API conectada ✓';
+  document.getElementById('api-card').style.display = 'none';
+}
+
+document.getElementById('btn-save-key').addEventListener('click', function() {
+  var v = document.getElementById('apikey').value.trim();
+  if (v.indexOf('sk-ant') !== 0) { toast('Chave inválida. Deve começar com sk-ant-','err'); return; }
+  S.key = v;
+  try { localStorage.setItem('lf_key', v); } catch(e) {}
+  markKeyOk();
+  toast('API conectada com sucesso!','ok');
+});
+
+/* ── NAVIGATION ─────────────────────────────────────────────────── */
+function goPanel(id) {
+  PANELS.forEach(function(p, i) {
+    document.getElementById('panel-' + p).classList.toggle('on', p === id);
+    var d = document.getElementById('d' + i);
+    var idx = PANELS.indexOf(id);
+    d.classList.toggle('on', i === idx);
+    d.classList.toggle('dn', i < idx);
+  });
+  document.querySelectorAll('.ni').forEach(function(n) {
+    n.classList.toggle('on', n.getAttribute('data-panel') === id);
+  });
+  document.getElementById('pg-title').textContent = PTITLES[id][0];
+  document.getElementById('pg-sub').textContent   = PTITLES[id][1];
+  if (id === 'titulo')    syncKwShow();
+  if (id === 'resultado') renderResultado();
+  window.scrollTo(0, 0);
+}
+
+document.getElementById('sidebar-nav').addEventListener('click', function(e) {
+  var ni = e.target.closest('.ni');
+  if (ni) goPanel(ni.getAttribute('data-panel'));
+});
+
+document.getElementById('btn-ir-titulo').addEventListener('click',    function() { goPanel('titulo'); });
+document.getElementById('btn-ir-carrossel').addEventListener('click', function() { goPanel('carrossel'); });
+document.getElementById('btn-ir-resultado').addEventListener('click', function() { goPanel('resultado'); });
+
+/* ── LOADING ────────────────────────────────────────────────────── */
+function load(msg) {
+  document.getElementById('lmsg').textContent = msg || 'Processando...';
+  document.getElementById('lov').classList.add('on');
+}
+function unload() { document.getElementById('lov').classList.remove('on'); }
+
+/* ── TOAST ──────────────────────────────────────────────────────── */
+function toast(msg, type) {
+  var map = { info:'t-info', ok:'t-ok', warn:'t-warn', err:'t-err' };
+  var d = document.createElement('div');
+  d.className = 'toast ' + (map[type] || 't-info');
+  d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(function() { if (d.parentNode) d.parentNode.removeChild(d); }, 3500);
+}
+
+/* ── CLAUDE API ─────────────────────────────────────────────────── */
+// Tenta chamada direta primeiro; se falhar por CORS, usa proxy
+var PROXY = 'https://corsproxy.io/?url=https://api.anthropic.com/v1/messages';
+var DIRECT = 'https://api.anthropic.com/v1/messages';
+
+function claude(prompt, maxTok) {
+  maxTok = maxTok || 1500;
+  if (!S.key) return Promise.reject(new Error('Configure a API key primeiro'));
+  var body = JSON.stringify({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: maxTok,
+    messages: [{ role: 'user', content: prompt }],
+  });
+  var headers = {
+    'Content-Type': 'application/json',
+    'x-api-key': S.key,
+    'anthropic-version': '2023-06-01',
+    'anthropic-dangerous-direct-browser-ipc-allowed': 'true',
+  };
+
+  function doFetch(url) {
+    return fetch(url, { method: 'POST', headers: headers, body: body })
+      .then(function(r) {
+        if (!r.ok) return r.json().then(function(e) {
+          throw new Error(e.error && e.error.message ? e.error.message : 'Erro HTTP ' + r.status);
+        });
+        return r.json();
+      })
+      .then(function(data) {
+        return data.content.map(function(c) { return c.text || ''; }).join('');
+      });
+  }
+
+  // Tenta direto; se der erro de rede (CORS), tenta via proxy
+  return doFetch(DIRECT).catch(function(err) {
+    if (err instanceof TypeError) {
+      // TypeError = falha de rede/CORS, tenta proxy
+      return doFetch(PROXY);
+    }
+    throw err;
+  });
+}
+
+function parseJ(raw) {
+  var clean = raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+  try { return JSON.parse(clean); } catch(_) {
+    var m = clean.match(/\{[\s\S]*\}/);
+    if (m) return JSON.parse(m[0]);
+    throw new Error('Não foi possível parsear a resposta da IA. Tente novamente.');
+  }
+}
+
+/* ── SPY ────────────────────────────────────────────────────────── */
+document.getElementById('btn-spy').addEventListener('click', function() {
+  var nome  = document.getElementById('p-nome').value.trim();
+  var cat   = document.getElementById('p-cat').value;
+  var attr  = document.getElementById('p-attr').value.trim();
+  if (!nome) { toast('Preencha o nome do produto','warn'); return; }
+  if (!cat)  { toast('Selecione a categoria','warn'); return; }
+  if (!S.key) {
+    document.getElementById('api-card').style.display = 'block';
+    toast('Configure a API key primeiro','err');
+    return;
+  }
+
+  S.prod = {
+    nome: nome, cat: cat, attr: attr,
+    tatual: document.getElementById('p-tatual').value.trim(),
+    preco:  document.getElementById('p-preco').value.trim(),
+  };
+
+  load('Analisando top sellers da Shopee...');
+
+  var prompt = 'Você é especialista em otimização de listings na Shopee Brasil.\n\n'
+    + 'Produto: ' + nome + '\nCategoria: ' + cat + '\nAtributos: ' + (attr||'não informados')
+    + '\nTítulo atual: ' + (S.prod.tatual||'nenhum')
+    + '\n\nSimule com precisão uma análise dos top 10 sellers dessa categoria na Shopee Brasil.'
+    + '\n\nResponda APENAS com JSON válido, sem texto antes ou depois, sem markdown:\n'
+    + '{"keywords":[{"word":"palavra","freq":9,"hot":true}],"competidores":[{"rank":1,"titulo":"titulo real e longo do seller","vendas":"1.2k vendas","preco":"R$ 89,90","destaque":"motivo"}],"imgInsights":[{"insight":"insight 1"}]}\n\n'
+    + 'Regras:\n- Gere exatamente 12 keywords relevantes para o produto\n'
+    + '- hot:true para freq >= 7\n- Gere 5 competidores com títulos reais e detalhados\n- Gere 4 imgInsights práticos';
+
+  claude(prompt, 1400)
+    .then(function(raw) {
+      var data = parseJ(raw);
+      S.spy = data;
+      renderSpy(data);
+      document.getElementById('spy-out').style.display = 'block';
+      toast('Análise concluída!','ok');
+    })
+    .catch(function(e) {
+      console.error(e);
+      var msg = String(e.message || e);
+      if (msg.toLowerCase().indexOf('fetch') > -1 || msg.toLowerCase().indexOf('network') > -1) {
+        toast('Erro de conexao (CORS). Hospede o arquivo no Tiiny.host e tente pelo link.', 'err');
+      } else if (msg.indexOf('401') > -1 || msg.toLowerCase().indexOf('auth') > -1) {
+        toast('API key invalida. Verifique em console.anthropic.com', 'err');
+      } else {
+        toast('Erro: ' + msg, 'err');
+      }
+    })
+    .finally(function() { unload(); });
+});
+
+function renderSpy(d) {
+  // keywords
+  var cloud = document.getElementById('kw-cloud');
+  cloud.innerHTML = '';
+  d.keywords.forEach(function(kw) {
+    var p = document.createElement('div');
+    p.className = 'kp' + (kw.hot ? ' hot' : '');
+    p.textContent = kw.word;
+    p.addEventListener('click', function() { toggleKw(p, kw.word); });
+    cloud.appendChild(p);
+  });
+  // bars
+  var ibr = document.getElementById('ib-rows');
+  ibr.innerHTML = '';
+  d.keywords.slice(0,7).forEach(function(kw) {
+    var pct = Math.round(kw.freq * 10);
+    ibr.innerHTML += '<div class="ib-row"><span class="ib-lbl">' + kw.word + '</span>'
+      + '<div class="ib-track"><div class="ib-fill" style="width:' + pct + '%"></div></div>'
+      + '<span class="ib-pct">' + kw.freq + '/10</span></div>';
+  });
+  // competitors
+  var cl = document.getElementById('comp-list');
+  cl.innerHTML = '';
+  d.competidores.forEach(function(c) {
+    cl.innerHTML += '<div class="cr"><span class="cr-rank">#' + c.rank + '</span>'
+      + '<div style="flex:1"><div class="cr-title">' + c.titulo + '</div>'
+      + '<div class="cr-meta">' + c.vendas + ' · ' + c.preco + ' · <em>' + c.destaque + '</em></div></div>'
+      + '<span class="badge ' + (c.rank <= 3 ? 'bg-gr' : 'bg-am') + '">' + (c.rank <= 3 ? 'Top 3' : 'Top ' + c.rank) + '</span></div>';
+  });
+  // img insights
+  var ii = document.getElementById('img-insights');
+  ii.innerHTML = d.imgInsights.map(function(i) {
+    return '<div style="display:flex;gap:7px;padding:.45rem 0;border-bottom:1px solid var(--b2);font-size:.78rem">'
+      + '<span style="color:var(--or);flex-shrink:0">→</span>'
+      + '<span style="color:var(--mu)">' + i.insight + '</span></div>';
+  }).join('');
+}
+
+function toggleKw(pill, word) {
+  if (S.selKws.has(word)) { S.selKws.delete(word); pill.classList.remove('sel'); }
+  else { S.selKws.add(word); pill.classList.add('sel'); }
+}
+
+function syncKwShow() {
+  var el = document.getElementById('kw-sel-show');
+  el.innerHTML = '';
+  if (!S.selKws.size) {
+    el.innerHTML = '<span style="font-size:.72rem;color:var(--mu2)">Nenhuma — volte ao Spy e clique nas keywords</span>';
+    return;
+  }
+  S.selKws.forEach(function(w) {
+    var p = document.createElement('div');
+    p.className = 'kp sel';
+    p.textContent = w;
+    el.appendChild(p);
+  });
+}
+
+/* ── TÍTULO ─────────────────────────────────────────────────────── */
+document.getElementById('btn-titulo').addEventListener('click', function() {
+  if (!S.spy) { toast('Execute o Spy primeiro','warn'); return; }
+  if (!S.key) { toast('Configure a API key primeiro','err'); return; }
+
+  var kwsArr = S.selKws.size
+    ? Array.from(S.selKws)
+    : S.spy.keywords.filter(function(k) { return k.hot; }).map(function(k) { return k.word; }).slice(0,6);
+
+  var tom   = document.getElementById('t-tom').value;
+  var emoji = document.getElementById('t-emoji').value;
+
+  load('Gerando variações de título...');
+
+  var prompt = 'Você é especialista em SEO e copywriting para Shopee Brasil.\n\n'
+    + 'Produto: ' + S.prod.nome + '\nCategoria: ' + S.prod.cat
+    + '\nAtributos: ' + S.prod.attr
+    + '\nKeywords obrigatórias (use todas): ' + kwsArr.join(', ')
+    + '\nTom: ' + tom
+    + '\nEmojis: ' + (emoji === 'sim' ? 'SIM, use emojis estratégicos' : 'NÃO use emojis')
+    + '\nTítulo atual: ' + (S.prod.tatual || 'nenhum')
+    + '\n\nRegras Shopee: máximo 120 chars, palavras-chave mais buscadas primeiro, não repetir palavras.'
+    + '\n\nResponda APENAS com JSON válido sem markdown:\n'
+    + '{"titulos":[{"v":1,"titulo":"titulo aqui","chars":95,"foco":"conversão máxima"},{"v":2,"titulo":"titulo aqui","chars":88,"foco":"técnico"},{"v":3,"titulo":"titulo aqui","chars":102,"foco":"benefício"}],'
+    + '"analise":{"fortes":["ponto 1","ponto 2","ponto 3"],"melhorar":["melhoria 1","melhoria 2"],"score":82},'
+    + '"bullets":["• Benefício 1","• Benefício 2","• Benefício 3","• Benefício 4","• Benefício 5"]}';
+
+  claude(prompt, 1100)
+    .then(function(raw) {
+      var data = parseJ(raw);
+      S.titulos   = data.titulos;
+      S.tituloEsc = data.titulos[0].titulo;
+      S.tituloAn  = data.analise;
+      S.bullets   = data.bullets || [];
+      S.score     = data.analise.score || 75;
+      renderTitulos(data);
+      document.getElementById('titulo-out').style.display = 'block';
+      toast('Títulos gerados!','ok');
+    })
+    .catch(function(e) { toast('Erro: ' + e.message,'err'); console.error(e); })
+    .finally(function() { unload(); });
+});
+
+function renderTitulos(data) {
+  var list = document.getElementById('titulos-list');
+  list.innerHTML = '';
+  data.titulos.forEach(function(t, i) {
+    var d = document.createElement('div');
+    d.className = 'tout' + (i === 0 ? ' sel' : '');
+    var ok = t.chars <= 120;
+    d.innerHTML = '<div class="tout-lbl">VARIAÇÃO ' + t.v + ' · ' + t.foco.toUpperCase() + '</div>'
+      + '<div class="tout-txt">' + t.titulo + '</div>'
+      + '<div class="tout-foot">'
+      + '<span class="' + (ok ? 'char-ok' : 'char-warn') + '">' + t.chars + '/120 chars' + (ok ? ' ✓' : ' ⚠') + '</span>'
+      + '<button class="cpb" style="pointer-events:auto">📋 Copiar</button>'
+      + '</div>';
+
+    var cpbtn = d.querySelector('.cpb');
+    var titulo = t.titulo;
+    cpbtn.addEventListener('click', function(e) { e.stopPropagation(); copyText(titulo, cpbtn); });
+
+    d.addEventListener('click', function() {
+      document.querySelectorAll('.tout').forEach(function(x) { x.classList.remove('sel'); });
+      d.classList.add('sel');
+      S.tituloEsc = titulo;
+      document.getElementById('titulo-sel-show').textContent = titulo;
+    });
+    list.appendChild(d);
+  });
+  document.getElementById('titulo-sel-show').textContent = data.titulos[0].titulo;
+
+  var an = document.getElementById('titulo-analise');
+  an.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:.875rem">'
+    + '<div><div style="font-size:.62rem;color:var(--gr);font-family:\'JetBrains Mono\',monospace;margin-bottom:.35rem">PONTOS FORTES</div>'
+    + data.analise.fortes.map(function(p) { return '<div style="font-size:.78rem;color:var(--mu);padding:.3rem 0;border-bottom:1px solid var(--b2)">✓ ' + p + '</div>'; }).join('')
+    + '</div><div><div style="font-size:.62rem;color:var(--or);font-family:\'JetBrains Mono\',monospace;margin-bottom:.35rem">PODE MELHORAR</div>'
+    + data.analise.melhorar.map(function(p) { return '<div style="font-size:.78rem;color:var(--mu);padding:.3rem 0;border-bottom:1px solid var(--b2)">→ ' + p + '</div>'; }).join('')
+    + '</div></div>'
+    + '<div><div style="font-size:.62rem;color:var(--mu);font-family:\'JetBrains Mono\',monospace;margin-bottom:.35rem">BULLETS PARA DESCRIÇÃO</div>'
+    + data.bullets.map(function(b) { return '<div style="font-size:.78rem;color:var(--mu);padding:.3rem 0;border-bottom:1px solid var(--b2)">' + b + '</div>'; }).join('')
+    + '</div>';
+}
+
+/* ── CARROSSEL ───────────────────────────────────────────────────── */
+document.getElementById('upz').addEventListener('click', function() { document.getElementById('file-in').click(); });
+document.getElementById('upz').addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('drag'); });
+document.getElementById('upz').addEventListener('dragleave', function() { this.classList.remove('drag'); });
+document.getElementById('upz').addEventListener('drop', function(e) { e.preventDefault(); this.classList.remove('drag'); addFiles(e.dataTransfer.files); });
+document.getElementById('file-in').addEventListener('change', function() { addFiles(this.files); });
+
+function addFiles(files) {
+  Array.from(files).slice(0, 10 - S.photos.length).forEach(function(f) {
+    var url = URL.createObjectURL(f);
+    S.photos.push(url);
+    var img = document.createElement('img');
+    img.src = url; img.className = 'pthumb';
+    document.getElementById('photos-prev').appendChild(img);
+  });
+}
+
+document.getElementById('btn-carrossel').addEventListener('click', function() {
+  if (!S.tituloEsc) { toast('Gere o título antes','warn'); return; }
+  if (!S.key) { toast('Configure a API key primeiro','err'); return; }
+
+  var hotKws = S.selKws.size
+    ? Array.from(S.selKws)
+    : (S.spy ? S.spy.keywords.filter(function(k) { return k.hot; }).slice(0,5).map(function(k) { return k.word; }) : []);
+  var hints = S.spy ? S.spy.imgInsights.map(function(i) { return i.insight; }).join('; ') : '';
+
+  load('Criando conteúdo dos slides...');
+
+  var prompt = 'Você é especialista em carrosséis de produto para Shopee Brasil.\n\n'
+    + 'Produto: ' + S.prod.nome + '\nAtributos: ' + S.prod.attr
+    + '\nTítulo: ' + S.tituloEsc
+    + '\nKeywords: ' + hotKws.join(', ')
+    + '\nInsights dos top sellers: ' + hints
+    + '\n\nCrie 5 slides de carrossel para Shopee (2000×2000px).'
+    + '\n\nResponda APENAS com JSON válido sem markdown:\n'
+    + '{"slides":[{"num":1,"nome":"Foto Principal","icon":"🖼️","instrucao":"instrução detalhada de design","textoSlide":"","dica":"dica"},{"num":2,"nome":"Benefícios","icon":"✅","instrucao":"instrução","textoSlide":"texto curto do slide","dica":"dica"},{"num":3,"nome":"Comparativo","icon":"⚖️","instrucao":"instrução","textoSlide":"texto","dica":"dica"},{"num":4,"nome":"Depoimento","icon":"⭐","instrucao":"instrução","textoSlide":"texto","dica":"dica"},{"num":5,"nome":"Garantia","icon":"🔒","instrucao":"instrução","textoSlide":"texto","dica":"dica"}]}';
+
+  claude(prompt, 1200)
+    .then(function(raw) {
+      var data = parseJ(raw);
+      S.slides = data.slides;
+      renderCarrossel(data.slides);
+      document.getElementById('carrossel-out').style.display = 'block';
+      toast('Slides gerados!','ok');
+    })
+    .catch(function(e) { toast('Erro: ' + e.message,'err'); console.error(e); })
+    .finally(function() { unload(); });
+});
+
+function renderCarrossel(slides) {
+  var g = document.getElementById('cg');
+  g.innerHTML = '';
+  slides.forEach(function(s, i) {
+    var c = document.createElement('div');
+    c.className = 'sc gen';
+    c.title = s.dica;
+    var ph = S.photos[i] || null;
+    c.innerHTML = '<div class="sc-num">Slide ' + s.num + '</div>'
+      + (ph ? '<img src="' + ph + '" style="width:90%;height:55%;object-fit:cover;border-radius:6px;margin-bottom:3px">' : '<div class="sc-ic">' + s.icon + '</div>')
+      + '<div class="sc-name">' + s.nome + '</div>'
+      + '<div class="sc-desc">' + s.instrucao.slice(0,55) + '...</div>'
+      + '<div class="sc-ok">✓</div>';
+    g.appendChild(c);
+  });
+}
+
+/* ── RESULTADO ───────────────────────────────────────────────────── */
+function renderResultado() {
+  document.getElementById('res-titulo').textContent = S.tituloEsc || '— (complete os passos anteriores)';
+
+  document.getElementById('btn-copy-titulo').onclick = function() {
+    copyText(S.tituloEsc, document.getElementById('btn-copy-titulo'));
+  };
+
+  var rk = document.getElementById('res-kws');
+  rk.innerHTML = '';
+  S.selKws.forEach(function(w) {
+    var p = document.createElement('div'); p.className='kp hot'; p.textContent=w; rk.appendChild(p);
+  });
+
+  var rs = document.getElementById('res-slides');
+  if (S.slides.length) {
+    rs.innerHTML = S.slides.map(function(s) {
+      return '<div style="padding:.65rem 0;border-bottom:1px solid var(--b2)">'
+        + '<div style="font-size:.62rem;font-family:\'JetBrains Mono\',monospace;color:var(--or);margin-bottom:.2rem">SLIDE ' + s.num + ' · ' + s.nome.toUpperCase() + '</div>'
+        + '<div style="font-size:.78rem;color:var(--mu);margin-bottom:.2rem">📐 ' + s.instrucao + '</div>'
+        + (s.textoSlide ? '<div style="font-size:.78rem;color:var(--tx);background:var(--s2);border-radius:5px;padding:.4rem .65rem;margin-top:.3rem">💬 ' + s.textoSlide + '</div>' : '')
+        + (s.dica ? '<div style="font-size:.65rem;color:var(--am);margin-top:.2rem">💡 ' + s.dica + '</div>' : '')
+        + '</div>';
+    }).join('');
+  } else {
+    rs.innerHTML = '<div style="color:var(--mu);font-size:.78rem">Complete o passo Carrossel primeiro.</div>';
+  }
+
+  var sc = S.score;
+  var ring = document.getElementById('score-ring');
+  ring.style.strokeDashoffset = 175.9 - (175.9 * sc / 100);
+  ring.style.stroke = sc >= 80 ? 'var(--gr)' : sc >= 60 ? 'var(--am)' : 'var(--or)';
+  document.getElementById('score-num').textContent = sc;
+  document.getElementById('score-lbl').textContent = sc>=80?'Excelente':sc>=60?'Bom':'Precisa melhorar';
+  document.getElementById('score-sub').textContent = sc>=80?'Pronto para o topo':'Veja as dicas abaixo';
+
+  var tips = document.getElementById('score-tips');
+  if (S.tituloAn && S.tituloAn.melhorar && S.tituloAn.melhorar.length) {
+    tips.innerHTML = '<div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--b)">'
+      + '<div style="font-size:.62rem;color:var(--mu);font-family:\'JetBrains Mono\',monospace;margin-bottom:.4rem">DICAS PARA AUMENTAR O SCORE</div>'
+      + S.tituloAn.melhorar.map(function(p) { return '<div style="font-size:.78rem;color:var(--mu);padding:.3rem 0;border-bottom:1px solid var(--b2)">→ ' + p + '</div>'; }).join('')
+      + '</div>';
+  }
+}
+
+/* ── DOWNLOAD ────────────────────────────────────────────────────── */
+document.getElementById('btn-dl').addEventListener('click', function() {
+  var kws = Array.from(S.selKws).join(', ');
+  var sText = S.slides.map(function(s) {
+    return 'SLIDE ' + s.num + ' — ' + s.nome
+      + '\nInstrução: ' + s.instrucao
+      + '\nTexto: ' + (s.textoSlide || '(sem texto)')
+      + '\nDica: ' + s.dica;
+  }).join('\n\n');
+
+  var txt = 'LISTIFY — RELATÓRIO DE LISTING SHOPEE\n'
+    + '======================================\n'
+    + 'Produto: ' + S.prod.nome + '\nCategoria: ' + S.prod.cat
+    + '\nGerado em: ' + new Date().toLocaleDateString('pt-BR')
+    + '\n\nTÍTULO OTIMIZADO\n----------------\n' + S.tituloEsc
+    + '\n\nKEYWORDS\n--------\n' + kws
+    + '\n\nBULLETS PARA DESCRIÇÃO\n-----------------------\n' + S.bullets.join('\n')
+    + '\n\nINSTRUÇÕES DO CARROSSEL\n------------------------\n' + sText
+    + '\n\nSCORE: ' + S.score + '/100\n';
+
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
+  a.download = 'listify-' + (S.prod.nome||'produto').replace(/\s+/g,'-').toLowerCase() + '.txt';
+  a.click();
+});
+
+document.getElementById('btn-reset').addEventListener('click', function() {
+  S.spy=null; S.selKws=new Set(); S.titulos=[]; S.tituloEsc='';
+  S.tituloAn=null; S.bullets=[]; S.slides=[]; S.photos=[]; S.score=0;
+  ['spy-out','titulo-out','carrossel-out'].forEach(function(id) {
+    document.getElementById(id).style.display='none';
+  });
+  document.getElementById('photos-prev').innerHTML='';
+  goPanel('spy');
+  toast('Pronto para novo produto','ok');
+});
+
+/* ── COPY ────────────────────────────────────────────────────────── */
+function copyText(txt, btn) {
+  if (!txt) return;
+  navigator.clipboard.writeText(txt).then(function() {
+    if (!btn) return;
+    var orig = btn.textContent;
+    btn.textContent = '✓ Copiado';
+    btn.classList.add('ok');
+    setTimeout(function() { btn.textContent = orig; btn.classList.remove('ok'); }, 2000);
+  }).catch(function() { toast('Erro ao copiar. Selecione e use Ctrl+C','warn'); });
+}
+
+/* ── INIT ────────────────────────────────────────────────────────── */
+initKey();
+</script>
+</body>
+</html>
